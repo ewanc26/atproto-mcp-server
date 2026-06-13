@@ -1,11 +1,25 @@
 # ATProto MCP Server
 
-A Model Context Protocol (MCP) server for interacting with the AT Protocol (ATProto) ecosystem, including Bluesky.
+A refined Model Context Protocol (MCP) server for interacting with the AT Protocol (ATProto) ecosystem, including Bluesky, built with official best practices.
 
-## Features
+## Features & Tools
 
-- `get_profile`: Retrieve user profile information by handle or DID.
-- `resolve_handle`: Resolve a handle to its corresponding DID.
+- **Identity & Profiles**:
+  - `get_profile`: Retrieve detailed actor profiles by handle or DID.
+  - `resolve_handle`: Resolve handles to persistent DIDs.
+- **Social Discovery**:
+  - `search_posts`: Search for public posts using keywords.
+  - `get_author_feed`: Fetch the feed of a specific user.
+  - `get_post_thread`: Retrieve a post and its conversation tree.
+  - `get_suggestions`: Get follow recommendations.
+
+## Best Practices Implemented
+
+Following standards from [atproto.com](https://atproto.com) and [endpoints.bsky.app](https://endpoints.bsky.app):
+- **High-Performance Infrastructure**: Uses `https://public.api.bsky.app` for cached, read-only requests.
+- **Robust Schema Design**: Detailed input schemas for better LLM tool discovery.
+- **Error Handling**: Uses `McpError` for standardized error reporting.
+- **Scalability**: Support for limit parameters and cursors for pagination.
 
 ## Installation
 
@@ -14,9 +28,7 @@ npm install
 npm run build
 ```
 
-## Configuration
-
-To use this with an MCP client (like Claude Desktop), add the following to your configuration:
+## Configuration (Claude Desktop)
 
 ```json
 {
@@ -28,9 +40,3 @@ To use this with an MCP client (like Claude Desktop), add the following to your 
   }
 }
 ```
-
-## Tech Stack
-
-- [AT Protocol API](https://github.com/bluesky-social/atproto)
-- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
-- TypeScript
