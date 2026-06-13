@@ -1,0 +1,19 @@
+{
+  "name": "atproto-mcp-server",
+  "version": "1.0.0",
+  "description": "AT Protocol MCP Server",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@atproto/api": "^0.13.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
