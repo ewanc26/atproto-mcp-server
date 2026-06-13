@@ -10,13 +10,13 @@
     "test": "node --loader ts-node/esm tests/integration.test.ts"
   },
   "dependencies": {
-    "@atproto/api": "^0.20.7",
+    "@atproto/api": "latest",
     "@modelcontextprotocol/sdk": "latest"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.1"
+    "@types/node": "latest",
+    "typescript": "latest",
+    "ts-node": "latest"
   },
   "engines": {
     "node": ">=20.0.0"
