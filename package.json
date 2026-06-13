@@ -1,19 +1,24 @@
 {
   "name": "atproto-mcp-server",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Modularized AT Protocol MCP server",
   "type": "module",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "test": "node --loader ts-node/esm tests/integration.test.ts"
   },
   "dependencies": {
-    "@atproto/api": "^0.13.0",
+    "@atproto/api": "^0.20.7",
     "@modelcontextprotocol/sdk": "latest"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
