@@ -1,3 +1,8 @@
+// ── Session Management ─────────────────────────────────────────────────────
+// Authenticate to a Bluesky PDS via handle/password, maintain a session
+// refresh loop, and expose the underlying BskyAgent for downstream managers.
+// Falls back to read-only mode (public API) when no credentials are set.
+
 import { BskyAgent } from "@atproto/api";
 
 export class SessionManager {
@@ -10,6 +15,8 @@ export class SessionManager {
     this.agent = new BskyAgent({ service });
   }
 
+  /** Authenticate from BSKY_HANDLE and BSKY_PASSWORD env vars. Silent no-op
+   * when credentials are absent — the server runs in public read-only mode. */
   async login() {
     this.handle = process.env.BSKY_HANDLE;
     const password = process.env.BSKY_PASSWORD;
@@ -32,6 +39,8 @@ export class SessionManager {
     }
   }
 
+  /** Refresh the AT Protocol session token every 30 minutes to prevent expiry.
+   * Future: replace the stub with the actual session.refresh() call. */
   private startRefreshLoop() {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
     this.refreshInterval = setInterval(async () => {
