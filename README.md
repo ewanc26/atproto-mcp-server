@@ -1,34 +1,26 @@
 # ATProto MCP Server
 
-A refined Model Context Protocol (MCP) server for interacting with the AT Protocol (ATProto) ecosystem, including Bluesky, built with official best practices.
+An MCP server for the AT Protocol and Bluesky.
 
-## Features & Tools
+## Tools
 
-- **Identity & Profiles**:
-  - `get_profile`: Retrieve detailed actor profiles by handle or DID.
-  - `resolve_handle`: Resolve handles to persistent DIDs.
-- **Social Discovery**:
-  - `search_posts`: Search for public posts using keywords.
-  - `get_author_feed`: Fetch the feed of a specific user.
-  - `get_post_thread`: Retrieve a post and its conversation tree.
-  - `get_suggestions`: Get follow recommendations.
+- `get_profile` — Get an actor profile by handle or DID.
+- `resolve_handle` — Resolve a handle to a DID.
+- `search_posts` — Search public posts by keyword.
+- `get_author_feed` — Get a user's feed.
+- `get_post_thread` — Get a post and its replies.
+- `get_suggestions` — Get follow recommendations.
 
-## Best Practices Implemented
+Uses `https://public.api.bsky.app` for read-only requests. No auth needed.
 
-Following standards from [atproto.com](https://atproto.com) and [endpoints.bsky.app](https://endpoints.bsky.app):
-- **High-Performance Infrastructure**: Uses `https://public.api.bsky.app` for cached, read-only requests.
-- **Robust Schema Design**: Detailed input schemas for better LLM tool discovery.
-- **Error Handling**: Uses `McpError` for standardized error reporting.
-- **Scalability**: Support for limit parameters and cursors for pagination.
-
-## Installation
+## Install
 
 ```bash
 npm install
 npm run build
 ```
 
-## Configuration (Claude Desktop)
+## Config (Claude Desktop)
 
 ```json
 {
