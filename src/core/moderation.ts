@@ -39,7 +39,7 @@ export class ModerationManager {
 
   /** Query all labels currently applied to a given URI. */
   async getLabels(uri: string) {
-    return await this.agent.atproto.label.queryLabels({
+    return await this.agent.com.atproto.label.queryLabels({
       uriPatterns: [uri]
     });
   }

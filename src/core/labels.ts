@@ -18,7 +18,7 @@ export class CustomLabelManager {
 
   /** Query known label definitions by fuzzy URI pattern matching. */
   async getLabelDefinitions(labelValues: string[]) {
-    return await this.agent.atproto.label.queryLabels({
+    return await this.agent.com.atproto.label.queryLabels({
       uriPatterns: labelValues.map(v => `*${v}*`)
     });
   }

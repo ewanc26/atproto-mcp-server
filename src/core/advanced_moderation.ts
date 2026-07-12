@@ -15,12 +15,12 @@ export class AdvancedModerationManager {
   /** Query labels for a subject across multiple labelers in parallel. */
   async queryOzoneLabels(subject: string, labelers: string[]) {
     const responses = await Promise.all(labelers.map(did =>
-      this.agent.atproto.label.queryLabels({
+      this.agent.com.atproto.label.queryLabels({
         uriPatterns: [subject],
         sources: [did]
       })
     ));
-    return responses.map(r => r.data.labels).flat();
+    return responses.flatMap(r => r.data.labels);
   }
 
   /** Fetch a labeler's service metadata, including its configured policies. */

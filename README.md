@@ -1,34 +1,54 @@
 # ATProto MCP Server
 
-An MCP server for the AT Protocol and Bluesky.
+An MCP server that gives compatible clients access to Bluesky and the AT Protocol over stdio. It works without credentials for public reads and enables account actions when Bluesky credentials are configured.
 
-## Tools
+## Available tools
 
-- `get_profile` — Get an actor profile by handle or DID.
-- `resolve_handle` — Resolve a handle to a DID.
-- `search_posts` — Search public posts by keyword.
-- `get_author_feed` — Get a user's feed.
-- `get_post_thread` — Get a post and its replies.
-- `get_suggestions` — Get follow recommendations.
+Public tools: `get_profile`, `resolve_handle`, `search_posts`, `get_author_feed`, `get_post_thread`, `get_suggestions`, `get_actor_likes`, `get_followers`, and `get_follows`.
 
-Uses `https://public.api.bsky.app` for read-only requests. No auth needed.
+Authenticated tools: `get_timeline`, `create_post`, `delete_post`, `follow`, `unfollow`, `like`, and `unlike`.
 
-## Install
+Cursor-based tools accept the `cursor` returned by a previous response. Write operations use AT URIs (and, for likes, the target CID) so callers can safely refer to exact records.
+
+## Install and run
+
+Requires Node.js 20 or newer.
 
 ```bash
 npm install
 npm run build
+npm start
 ```
 
-## Config (Claude Desktop)
+The default read-only endpoint is `https://public.api.bsky.app`. To use another service, set `BSKY_SERVICE`.
+
+For authenticated tools, set `BSKY_HANDLE` and `BSKY_PASSWORD`. A Bluesky app password is recommended instead of the account password. When credentials are present, the default service changes to `https://bsky.social`.
+
+## MCP client configuration
+
+Build the project first, then add it to your client's MCP configuration:
 
 ```json
 {
   "mcpServers": {
     "atproto": {
       "command": "node",
-      "args": ["/path/to/atproto-mcp-server/dist/index.js"]
+      "args": ["/absolute/path/to/atproto-mcp-server/build/index.js"],
+      "env": {
+        "BSKY_HANDLE": "alice.bsky.social",
+        "BSKY_PASSWORD": "xxxx-xxxx-xxxx-xxxx"
+      }
     }
   }
 }
 ```
+
+Omit `env` for read-only use. The server writes logs to stderr, leaving stdout reserved for MCP messages.
+
+## Development
+
+```bash
+npm test
+```
+
+The tests build the TypeScript project and validate that the advertised MCP tool surface is backed by handlers, including argument validation and ATProto request mapping.
