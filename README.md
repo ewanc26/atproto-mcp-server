@@ -1,6 +1,8 @@
-# ATProto MCP Server
+# MCP Server for AT Protocol
 
 An MCP server that gives compatible clients access to Bluesky and the AT Protocol over stdio. It works without credentials for public reads and enables account actions when Bluesky credentials are configured.
+
+> Independent project; see the [trademark notice](TRADEMARKS.md).
 
 ## Available tools
 
@@ -51,4 +53,4 @@ Omit `env` for read-only use. The server writes logs to stderr, leaving stdout r
 npm test
 ```
 
-The tests build the TypeScript project and validate that the advertised MCP tool surface is backed by handlers, including argument validation and ATProto request mapping.
+The tests build the TypeScript project and validate that the advertised MCP tool surface is backed by handlers, including argument validation and AT Protocol request mapping.

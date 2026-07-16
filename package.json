@@ -1,7 +1,7 @@
 {
   "name": "atproto-mcp-server",
   "version": "2.1.0",
-  "description": "Modularized AT Protocol MCP server",
+  "description": "Modular MCP server for AT Protocol",
   "type": "module",
   "main": "build/index.js",
   "scripts": {
