@@ -54,3 +54,10 @@ npm test
 ```
 
 The tests build the TypeScript project and validate that the advertised MCP tool surface is backed by handlers, including argument validation and AT Protocol request mapping.
+
+## Support
+
+If you find this project useful, consider supporting its development:
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ewancroft)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-30363D?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/ewanc26)
