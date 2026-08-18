@@ -1,9 +1,4 @@
-// ── Persistence / Jetstream Subscriptions ──────────────────────────────────
-// Jetstream WebSocket URL construction for real-time feed and graph
-// event streams. The cursor parameter enables resumable subscriptions from
-// the last known position, covering disconnects gracefully.
-
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
 
 export interface JetstreamState {
   lastCursor: string;
@@ -11,17 +6,12 @@ export interface JetstreamState {
 }
 
 export class PersistenceManager {
-  private agent: BskyAgent;
+  private client: Client;
 
-  constructor(agent: BskyAgent) {
-    this.agent = agent;
+  constructor(client: Client) {
+    this.client = client;
   }
 
-  /**
-   * Build a Jetstream subscription URL, optionally resuming from a cursor.
-   * Defaults to subscribing to posts and follows — the two most common
-   * collections for real-time agent workflows.
-   */
   async getPersistentSubscription(cursor?: string) {
     const base = "wss://jetstream1.us-east.bsky.network/subscribe";
     const collections = ['app.bsky.feed.post', 'app.bsky.graph.follow'];

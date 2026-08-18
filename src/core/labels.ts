@@ -1,24 +1,19 @@
-// ── Custom Labels ──────────────────────────────────────────────────────────
-// Self-label construction and label definition queries against AT Protocol
-// label services. Supports moderation-tool integration workflows.
-
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { com } from '@bsky/sdk/lexicons';
 
 export class CustomLabelManager {
-  private agent: BskyAgent;
+  private client: Client;
 
-  constructor(agent: BskyAgent) {
-    this.agent = agent;
+  constructor(client: Client) {
+    this.client = client;
   }
 
-  /** Format label values for inclusion in a post's self-labels array. */
   async applySelfLabel(labels: string[]) {
     return labels.map(val => ({ val }));
   }
 
-  /** Query known label definitions by fuzzy URI pattern matching. */
   async getLabelDefinitions(labelValues: string[]) {
-    return await this.agent.com.atproto.label.queryLabels({
+    return await this.client.call(com.atproto.label.queryLabels, {
       uriPatterns: labelValues.map(v => `*${v}*`)
     });
   }

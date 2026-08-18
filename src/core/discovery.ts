@@ -1,37 +1,30 @@
-// ── Content Discovery ──────────────────────────────────────────────────────
-// Feed exploration, timeline retrieval, and actor-specific content queries.
-// Wraps Bluesky's unauthenticated and authenticated feed endpoints for
-// downstream tool consumption.
-
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { app } from '@bsky/sdk/lexicons';
 
 export class DiscoveryManager {
-  private agent: BskyAgent;
+  private client: Client;
 
-  constructor(agent: BskyAgent) {
-    this.agent = agent;
+  constructor(client: Client) {
+    this.client = client;
   }
 
-  /** List popular feed generators for users to discover new content streams. */
   async findFeeds(limit: number = 25, cursor?: string) {
-    return await this.agent.app.bsky.unspecced.getPopularFeedGenerators({
+    return await this.client.call(app.bsky.unspecced.getPopularFeedGenerators, {
       limit,
       cursor,
     });
   }
 
-  /** Retrieve posts an actor has liked. Requires authentication. */
   async getActorLikes(actor: string, limit: number = 25, cursor?: string) {
-    return await this.agent.app.bsky.feed.getActorLikes({
+    return await this.client.call(app.bsky.feed.getActorLikes, {
       actor,
       limit,
       cursor,
     });
   }
 
-  /** Fetch the authenticated user's home timeline. */
   async getTimeline(limit: number = 50, cursor?: string) {
-    return await this.agent.app.bsky.feed.getTimeline({
+    return await this.client.call(app.bsky.feed.getTimeline, {
       limit,
       cursor,
     });

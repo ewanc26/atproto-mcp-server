@@ -1,4 +1,6 @@
-import { BskyAgent, RichText } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { RichText } from '@bsky/sdk/richtext';
+import { app, com, deleteFollow, deleteLike, deletePost, follow, like, post } from '@bsky/sdk';
 import { pathToFileURL } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -15,7 +17,7 @@ const service = process.env.BSKY_SERVICE ||
 const sessions = new SessionManager(service);
 
 type Args = Record<string, unknown>;
-type ToolHandler = (args: Args, agent: BskyAgent) => Promise<unknown>;
+type ToolHandler = (args: Args, client: Client) => Promise<unknown>;
 
 const string = (args: Args, name: string): string => {
   const value = args[name];
@@ -83,61 +85,61 @@ export const tools = [
 ] as const;
 
 export const handlers: Record<string, ToolHandler> = {
-  get_profile: async (a, agent) => (await agent.getProfile({ actor: string(a, "actor") })).data,
-  resolve_handle: async (a, agent) => (await agent.resolveHandle({ handle: string(a, "handle") })).data,
-  search_posts: async (a, agent) => (await agent.app.bsky.feed.searchPosts({
+  get_profile: async (a, client) => await client.call(app.bsky.actor.getProfile, { actor: string(a, "actor") }),
+  resolve_handle: async (a, client) => await client.call(com.atproto.identity.resolveHandle, { handle: string(a, "handle") }),
+  search_posts: async (a, client) => await client.call(app.bsky.feed.searchPosts, {
     q: string(a, "query"), limit: limit(a), cursor: optionalString(a, "cursor"),
     sort: optionalString(a, "sort") as "top" | "latest" | undefined,
-  })).data,
-  get_author_feed: async (a, agent) => (await agent.getAuthorFeed({
+  }),
+  get_author_feed: async (a, client) => await client.call(app.bsky.feed.getAuthorFeed, {
     actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor"),
     filter: optionalString(a, "filter") as "posts_with_replies" | "posts_no_replies" | "posts_with_media" | "posts_and_author_threads" | undefined,
-  })).data,
-  get_post_thread: async (a, agent) => (await agent.getPostThread({
+  }),
+  get_post_thread: async (a, client) => await client.call(app.bsky.feed.getPostThread, {
     uri: string(a, "uri"), depth: a.depth as number | undefined,
     parentHeight: a.parentHeight as number | undefined,
-  })).data,
-  get_suggestions: async (a, agent) => (await agent.getSuggestions({ limit: limit(a), cursor: optionalString(a, "cursor") })).data,
-  get_timeline: async (a, agent) => {
+  }),
+  get_suggestions: async (a, client) => await client.call(app.bsky.actor.getSuggestions, { limit: limit(a), cursor: optionalString(a, "cursor") }),
+  get_timeline: async (a, client) => {
     requireAuth();
-    return (await agent.getTimeline({ limit: limit(a, 50), cursor: optionalString(a, "cursor") })).data;
+    return await client.call(app.bsky.feed.getTimeline, { limit: limit(a, 50), cursor: optionalString(a, "cursor") });
   },
-  get_actor_likes: async (a, agent) => (await agent.app.bsky.feed.getActorLikes({ actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor") })).data,
-  get_followers: async (a, agent) => (await agent.getFollowers({ actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor") })).data,
-  get_follows: async (a, agent) => (await agent.getFollows({ actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor") })).data,
-  create_post: async (a, agent) => {
+  get_actor_likes: async (a, client) => await client.call(app.bsky.feed.getActorLikes, { actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor") }),
+  get_followers: async (a, client) => await client.call(app.bsky.graph.getFollowers, { actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor") }),
+  get_follows: async (a, client) => await client.call(app.bsky.graph.getFollows, { actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor") }),
+  create_post: async (a, client) => {
     requireAuth();
     const rt = new RichText({ text: string(a, "text") });
-    await rt.detectFacets(agent);
+    await rt.detectFacets(client);
     const rootUri = optionalString(a, "replyRootUri");
     const rootCid = optionalString(a, "replyRootCid");
     const parentUri = optionalString(a, "replyParentUri");
     const parentCid = optionalString(a, "replyParentCid");
     const supplied = [rootUri, rootCid, parentUri, parentCid].filter(Boolean).length;
     if (supplied !== 0 && supplied !== 4) throw new McpError(ErrorCode.InvalidParams, "All four reply fields are required for a reply");
-    return await agent.post({ text: rt.text, facets: rt.facets, createdAt: new Date().toISOString(),
+    return await client.call(post, { text: rt.text, facets: rt.facets, createdAt: new Date().toISOString(),
       reply: supplied === 4 ? { root: { uri: rootUri!, cid: rootCid! }, parent: { uri: parentUri!, cid: parentCid! } } : undefined });
   },
-  delete_post: async (a, agent) => { requireAuth(); await agent.deletePost(string(a, "uri")); return { deleted: true }; },
-  follow: async (a, agent) => {
+  delete_post: async (a, client) => { requireAuth(); await client.call(deletePost, string(a, "uri")); return { deleted: true }; },
+  follow: async (a, client) => {
     requireAuth();
     const actor = string(a, "actor");
-    const did = actor.startsWith("did:") ? actor : (await agent.resolveHandle({ handle: actor })).data.did;
-    return await agent.follow(did);
+    const did = actor.startsWith("did:") ? actor : (await client.call(com.atproto.identity.resolveHandle, { handle: actor })).did;
+    return await client.call(follow, { did });
   },
-  unfollow: async (a, agent) => { requireAuth(); await agent.deleteFollow(string(a, "uri")); return { deleted: true }; },
-  like: async (a, agent) => { requireAuth(); return await agent.like(string(a, "uri"), string(a, "cid")); },
-  unlike: async (a, agent) => { requireAuth(); await agent.deleteLike(string(a, "uri")); return { deleted: true }; },
+  unfollow: async (a, client) => { requireAuth(); await client.call(deleteFollow, string(a, "uri")); return { deleted: true }; },
+  like: async (a, client) => { requireAuth(); return await client.call(like, { uri: string(a, "uri"), cid: string(a, "cid") }); },
+  unlike: async (a, client) => { requireAuth(); await client.call(deleteLike, string(a, "uri")); return { deleted: true }; },
 };
 
-export function createServer(agent: BskyAgent = sessions.getAgent()) {
+export function createServer(client: Client = sessions.getClient()) {
   const server = new Server({ name: "atproto-mcp-server", version: "2.1.0" }, { capabilities: { tools: {} } });
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: [...tools] }));
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const handler = handlers[request.params.name];
     if (!handler) throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
     try {
-      const result = await handler((request.params.arguments ?? {}) as Args, agent);
+      const result = await handler((request.params.arguments ?? {}) as Args, client);
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     } catch (error) {
       if (error instanceof McpError) throw error;
@@ -152,6 +154,7 @@ async function main() {
   await sessions.login();
   await createServer().connect(new StdioServerTransport());
   console.error("ATProto MCP Server v2.1.0 running");
+  console.error("Support: Ko-fi https://ko-fi.com/ewancroft · GitHub Sponsors https://github.com/sponsors/ewanc26");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

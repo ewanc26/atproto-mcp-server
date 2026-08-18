@@ -1,20 +1,15 @@
-// ── Moderation (Reporting) ─────────────────────────────────────────────────
-// AT Protocol moderation primitives: repo-level and record-level reports,
-// plus label queries. Maps to com.atproto.moderation.createReport and
-// com.atproto.label.queryLabels.
-
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { com } from '@bsky/sdk/lexicons';
 
 export class ModerationManager {
-  private agent: BskyAgent;
+  private client: Client;
 
-  constructor(agent: BskyAgent) {
-    this.agent = agent;
+  constructor(client: Client) {
+    this.client = client;
   }
 
-  /** Report an entire repository (a user's account) to the moderation service. */
   async reportRepo(did: string, reasonType: string, reason?: string) {
-    return await this.agent.com.atproto.moderation.createReport({
+    return await this.client.call(com.atproto.moderation.createReport, {
       subject: {
         $type: 'com.atproto.admin.defs#repoRef',
         did: did,
@@ -24,9 +19,8 @@ export class ModerationManager {
     });
   }
 
-  /** Report a specific record (a single post, list item, etc.) for review. */
   async reportRecord(uri: string, cid: string, reasonType: string, reason?: string) {
-    return await this.agent.com.atproto.moderation.createReport({
+    return await this.client.call(com.atproto.moderation.createReport, {
       subject: {
         $type: 'com.atproto.repo.strongRef',
         uri,
@@ -37,9 +31,8 @@ export class ModerationManager {
     });
   }
 
-  /** Query all labels currently applied to a given URI. */
   async getLabels(uri: string) {
-    return await this.agent.com.atproto.label.queryLabels({
+    return await this.client.call(com.atproto.label.queryLabels, {
       uriPatterns: [uri]
     });
   }

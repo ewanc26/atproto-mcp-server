@@ -1,35 +1,39 @@
-// ── Session Management ─────────────────────────────────────────────────────
-// Authenticate to a Bluesky PDS via handle/password, maintain a session
-// refresh loop, and expose the underlying BskyAgent for downstream managers.
-// Falls back to read-only mode (public API) when no credentials are set.
-
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { PasswordSession } from '@atproto/lex-password-session';
 
 export class SessionManager {
-  private agent: BskyAgent;
+  private client: Client;
+  private session: PasswordSession | null = null;
   private refreshInterval: NodeJS.Timeout | null = null;
   private isAuthenticated: boolean = false;
   private handle: string | undefined;
+  private serviceUrl: string;
 
   constructor(service: string) {
-    this.agent = new BskyAgent({ service });
+    this.serviceUrl = service;
+    this.client = new Client({ service });
   }
 
-  /** Authenticate from BSKY_HANDLE and BSKY_PASSWORD env vars. Silent no-op
-   * when credentials are absent — the server runs in public read-only mode. */
   async login() {
     this.handle = process.env.BSKY_HANDLE;
     const password = process.env.BSKY_PASSWORD;
 
     if (this.handle && password) {
       try {
-        await this.agent.login({ identifier: this.handle, password });
+        const session = await PasswordSession.login({
+          service: this.serviceUrl,
+          identifier: this.handle,
+          password,
+        });
+        this.session = session;
+        this.client = new Client(session);
         this.isAuthenticated = true;
         console.error(`Authenticated successfully as ${this.handle}`);
         this.startRefreshLoop();
         return true;
-      } catch (error: any) {
-        console.error(`Authentication failed: ${error.message}`);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Authentication failed: ${message}`);
         this.isAuthenticated = false;
         return false;
       }
@@ -39,22 +43,23 @@ export class SessionManager {
     }
   }
 
-  /** Refresh the AT Protocol session token every 30 minutes to prevent expiry.
-   * Future: replace the stub with the actual session.refresh() call. */
   private startRefreshLoop() {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
     this.refreshInterval = setInterval(async () => {
       try {
-        if (this.isAuthenticated) {
+        if (this.isAuthenticated && this.session && !this.session.destroyed) {
           console.error("Refreshing session...");
+          await this.session.refresh();
         }
-      } catch (error: any) {
-        console.error(`Token refresh failed: ${error.message}`);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Token refresh failed: ${message}`);
         await this.login();
       }
     }, 30 * 60 * 1000);
   }
 
-  getAgent() { return this.agent; }
+  getClient() { return this.client; }
+  getSession() { return this.session; }
   isAuth() { return this.isAuthenticated; }
 }

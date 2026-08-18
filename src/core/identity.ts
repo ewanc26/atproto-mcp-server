@@ -1,34 +1,29 @@
-// ── Identity Resolution ────────────────────────────────────────────────────
-// Handle-to-DID resolution, repo introspection, and OAuth metadata
-// construction. Spec: https://atproto.com/specs/did
-
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { com } from '@bsky/sdk/lexicons';
 
 export class IdentityManager {
-  private agent: BskyAgent;
+  private client: Client;
 
-  constructor(agent: BskyAgent) {
-    this.agent = agent;
+  constructor(client: Client) {
+    this.client = client;
   }
 
-  /** Resolve a handle to a DID and return the account's repo collection list. */
   async resolveAccountInfo(handle: string) {
-    const did = await this.agent.resolveHandle({ handle });
-    const description = await this.agent.com.atproto.repo.describeRepo({ repo: did.data.did });
+    const didResult = await this.client.call(com.atproto.identity.resolveHandle, { handle });
+    const did = didResult.did;
+    const description = await this.client.call(com.atproto.repo.describeRepo, { repo: did });
     return {
-      did: did.data.did,
+      did,
       handle,
-      collections: description.data.collections
+      collections: description.collections
     };
   }
 
-  /** Build OAuth 2.0 metadata for a given PDS, scoped to AT Protocol flows. */
   async getOAuthMetadata(pdsUrl: string) {
     return {
       issuer: pdsUrl,
       authorization_endpoint: `${pdsUrl}/oauth/authorize`,
       token_endpoint: `${pdsUrl}/oauth/token`,
-      // Spec: https://atproto.com/specs/oauth#scopes
       scopes_supported: ['atproto', 'transition']
     };
   }

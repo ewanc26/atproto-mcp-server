@@ -10,7 +10,9 @@
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "@atproto/api": "latest",
+    "@bsky/sdk": "latest",
+    "@atproto/lex": "^0.1.4",
+    "@atproto/lex-password-session": "latest",
     "@modelcontextprotocol/sdk": "latest"
   },
   "devDependencies": {

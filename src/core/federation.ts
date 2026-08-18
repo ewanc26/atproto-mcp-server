@@ -1,20 +1,16 @@
-// ── Federation Status ──────────────────────────────────────────────────────
-// PDS (Personal Data Server) health checks and protocol-level server
-// introspection. Useful for verifying connectivity before issuing operations.
-
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { com } from '@bsky/sdk/lexicons';
 
 export class FederationManager {
-  private agent: BskyAgent;
+  private client: Client;
 
-  constructor(agent: BskyAgent) {
-    this.agent = agent;
+  constructor(client: Client) {
+    this.client = client;
   }
 
-  /** Probe the PDS via the protocol's describeServer endpoint. */
   async inspectPdsStatus(pdsUrl: string) {
     try {
-      return await this.agent.com.atproto.server.describeServer();
+      return await this.client.call(com.atproto.server.describeServer);
     } catch (e) {
       return { status: 'unreachable', error: String(e) };
     }

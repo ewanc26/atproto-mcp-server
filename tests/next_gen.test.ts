@@ -1,26 +1,20 @@
-// ── Next-Gen Feature Test Suite ───────────────────────────────────────────
-// Structural validation for moderation reporting methods and Jetstream
-// subscription URL construction. No network calls — pure logic verification.
-
 import { ModerationManager } from "../src/core/moderation.js";
 import { StreamingManager } from "../src/core/streaming.js";
-import { BskyAgent } from "@atproto/api";
+import { Client } from '@atproto/lex';
 
 async function runNextGenTests() {
   console.log("Starting Next-Gen Feature Tests (Moderation & Streaming)...");
 
-  const agent = new BskyAgent({ service: "https://bsky.social" });
-  const moderation = new ModerationManager(agent);
-  const streaming = new StreamingManager(agent);
+  const client = new Client({ service: "https://bsky.social" });
+  const moderation = new ModerationManager(client);
+  const streaming = new StreamingManager(client);
 
   try {
-    // ── Phase 6: Moderation Method Surface ──────────────────────────────
     console.log("Testing Moderation: Reporting logic...");
     if (typeof moderation.reportRepo !== 'function') throw new Error("reportRepo missing");
     if (typeof moderation.reportRecord !== 'function') throw new Error("reportRecord missing");
     console.log("  PASS: Moderation methods validated");
 
-    // ── Phase 6: Jetstream URL Generation ───────────────────────────────
     console.log("Testing Streaming: Jetstream URL generation...");
     const url = streaming.getJetstreamUrl(['app.bsky.feed.post', 'app.bsky.graph.follow']);
     console.log("  URL:", url);

@@ -1,25 +1,17 @@
-// ── Rich-Text Facets (Enhanced) ────────────────────────────────────────────
-// Extends @atproto/api's built-in facet detection with support for custom
-// entity mappings beyond the auto-detected mentions, links, and tags.
-
-import { BskyAgent, RichText } from "@atproto/api";
+import { Client } from '@atproto/lex';
+import { RichText } from '@bsky/sdk/richtext';
 
 export class AdvancedFacetManager {
-  private agent: BskyAgent;
+  private client: Client;
 
-  constructor(agent: BskyAgent) {
-    this.agent = agent;
+  constructor(client: Client) {
+    this.client = client;
   }
 
-  /**
-   * Auto-detect facets (mentions, links, tags) and overlay custom entity
-   * mappings on top. Custom mappings take textual ranges first-match-wins.
-   */
   async generateComplexFacets(text: string, customMappings: Array<{text: string, feature: any}>) {
     const rt = new RichText({ text });
-    await rt.detectFacets(this.agent);
+    await rt.detectFacets(this.client);
 
-    // Overlay custom facet mappings — first occurrence of each marker string.
     for (const mapping of customMappings) {
       const start = text.indexOf(mapping.text);
       if (start !== -1) {
