@@ -44,6 +44,24 @@ const limit = (args: Args, fallback = 25): number => {
   return value as number;
 };
 
+const optionalInteger = (args: Args, name: string, min: number, max: number): number | undefined => {
+  const value = args[name];
+  if (value === undefined) return undefined;
+  if (!Number.isInteger(value) || (value as number) < min || (value as number) > max) {
+    throw new McpError(ErrorCode.InvalidParams, `${name} must be an integer from ${min} to ${max}`);
+  }
+  return value as number;
+};
+
+const optionalEnum = <T extends string>(args: Args, name: string, allowed: readonly T[]): T | undefined => {
+  const value = optionalString(args, name);
+  if (value === undefined) return undefined;
+  if (!(allowed as readonly string[]).includes(value)) {
+    throw new McpError(ErrorCode.InvalidParams, `${name} must be one of: ${allowed.join(", ")}`);
+  }
+  return value as T;
+};
+
 const requireAuth = () => {
   if (!sessions.isAuth()) {
     throw new McpError(
@@ -89,15 +107,15 @@ export const handlers: Record<string, ToolHandler> = {
   resolve_handle: async (a, client) => await client.call(com.atproto.identity.resolveHandle, { handle: string(a, "handle") }),
   search_posts: async (a, client) => await client.call(app.bsky.feed.searchPosts, {
     q: string(a, "query"), limit: limit(a), cursor: optionalString(a, "cursor"),
-    sort: optionalString(a, "sort") as "top" | "latest" | undefined,
+    sort: optionalEnum(a, "sort", ["top", "latest"] as const),
   }),
   get_author_feed: async (a, client) => await client.call(app.bsky.feed.getAuthorFeed, {
     actor: string(a, "actor"), limit: limit(a), cursor: optionalString(a, "cursor"),
-    filter: optionalString(a, "filter") as "posts_with_replies" | "posts_no_replies" | "posts_with_media" | "posts_and_author_threads" | undefined,
+    filter: optionalEnum(a, "filter", ["posts_with_replies", "posts_no_replies", "posts_with_media", "posts_and_author_threads"] as const),
   }),
   get_post_thread: async (a, client) => await client.call(app.bsky.feed.getPostThread, {
-    uri: string(a, "uri"), depth: a.depth as number | undefined,
-    parentHeight: a.parentHeight as number | undefined,
+    uri: string(a, "uri"), depth: optionalInteger(a, "depth", 0, 100),
+    parentHeight: optionalInteger(a, "parentHeight", 0, 100),
   }),
   get_suggestions: async (a, client) => await client.call(app.bsky.actor.getSuggestions, { limit: limit(a), cursor: optionalString(a, "cursor") }),
   get_timeline: async (a, client) => {
